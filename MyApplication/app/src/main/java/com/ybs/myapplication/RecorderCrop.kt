@@ -10,6 +10,22 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 
+/** java **/
+//      findViewById<RecorderCrop>(R.id.crop).setClick { b, s, e ->
+//            val str = "$s - $e"
+//            if (b) {
+//                Toast.makeText(this, "保留 - $str", Toast.LENGTH_LONG).show()
+//            } else {
+//                Toast.makeText(this, "删除 - $str", Toast.LENGTH_LONG).show()
+//            }
+//        }
+
+/** xml **/
+//    <com.ybs.myapplication.RecorderCrop
+//        android:id="@+id/crop"
+//        android:layout_width="match_parent"
+//        android:layout_height="300dp" />
+
 /**
  * Created by DanYue on 2022/3/31 18:52.
  */
