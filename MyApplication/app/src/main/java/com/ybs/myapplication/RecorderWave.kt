@@ -97,6 +97,7 @@ class RecorderWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
 
     fun pop() {
         list[0] = getVolume()
+
     }
 }
 
