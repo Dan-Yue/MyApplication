@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Gradle: com.github.xfans:VoiceWaveView:1.0.2@aar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/d13e91b5e36c164a73b751170f2a21f5/transformed/jetified-VoiceWaveView-1.0.2/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/d13e91b5e36c164a73b751170f2a21f5/transformed/jetified-VoiceWaveView-1.0.2/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/d13e91b5e36c164a73b751170f2a21f5/transformed/jetified-VoiceWaveView-1.0.2/AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.xfans/VoiceWaveView/1.0.2/fb70948770a5bd3bc38b56f6d8141331d6500b6c/VoiceWaveView-1.0.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
