@@ -5,11 +5,30 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+
     <com.ybs.myapplication.RecorderWave
         android:id="@+id/recorder"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="335dp"
         android:background="@color/hui"
-        hc:default_size="100dp" />
+        hc:default_size="335dp" />
+
+    <Button
+        android:id="@+id/start"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="开始" />
+
+    <Button
+        android:id="@+id/stop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="停止" />
+
+    <Button
+        android:id="@+id/flag"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="插旗" />
 
 </LinearLayout>

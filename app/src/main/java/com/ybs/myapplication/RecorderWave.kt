@@ -1,16 +1,14 @@
 package com.ybs.myapplication
 
-import android.animation.ValueAnimator
 import android.content.Context
 import android.content.res.TypedArray
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Path
 import android.util.AttributeSet
 import android.view.View
-import android.view.animation.LinearInterpolator
 import java.util.*
-import kotlin.random.Random
 
 
 /**
@@ -19,85 +17,183 @@ import kotlin.random.Random
 class RecorderWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
     View(context, attrs, defStyleAttr) {
 
+    private var defaultSize = 0
+
+    //音波图线条的个数
+    private val count = 100
+
+    //音波图运动一个屏幕宽度需要的时间
+    private val time = 10000L
+
+    //音量值列表
+    private val data = mutableListOf<Float>()
+
+    //定时器，用来形成音波图的变化
+    private var timer: Timer? = null
+
+    //旗子插入的地方，列表形式，内容为音量值列表的下标
+    private val flag = mutableListOf<Int>()
+
+    //旗子的高度
+    private val flagHeight = 32f
+
+    //旗子的宽度
+    private val flagWidth = 50f
+
+    //画布
+    private var canvas = Canvas()
+
+    //用来记录上次插旗时间戳
+    private var minTimeTag = 0L
+
+    //插旗的最小时间间隔，不允许快速连续插旗
+    private val minTimeInterval = 1000L
+
+    //绘制音波图的画笔
+    private val paint by lazy {
+        Paint().also {
+            it.strokeWidth = 3f
+            it.color = Color.parseColor("#FFB8B8")
+        }
+    }
+
+    //绘制旗子的画笔
+    private val flagPaint by lazy {
+        Paint().also {
+            it.strokeWidth = 3f
+            it.color = Color.parseColor("#8EB7FF")
+        }
+    }
+
+    //绘制旗子上数字的画笔
+    private val textPaint by lazy {
+        Paint(Paint.ANTI_ALIAS_FLAG).also {
+            it.textAlign = Paint.Align.CENTER
+            it.color = Color.WHITE
+            it.textSize = 24f
+            it.isFakeBoldText = true
+        }
+    }
+
+    init {
+        val a: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.RecorderWave)
+        defaultSize = a.getDimensionPixelSize(R.styleable.RecorderWave_default_size, 100)
+        a.recycle()
+    }
+
     constructor(context: Context) : this(context, null, 0)
 
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
 
-    private var defaultSize = 0
-
-    init {
-        //第二个参数就是我们在styles.xml文件中的<declare-styleable>标签
-        //即属性集合的标签，在R文件中名称为R.styleable+name
-        val a: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.RecorderWave)
-        //第一个参数为属性集合里面的属性，R文件名称：R.styleable+属性集合名称+下划线+属性名称
-        //第二个参数为，如果没有设置这个属性，则设置的默认的值
-        defaultSize = a.getDimensionPixelSize(R.styleable.RecorderWave_default_size, 100)
-        //最后记得将TypedArray对象回收
-        a.recycle()
-    }
-
-    var value: Float = 0f
-
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        val paint = Paint()
-        val y = (height / 2).toFloat()
-        paint.strokeWidth = 3f
-        paint.color = Color.RED
-        canvas.drawLine(0f, y, width.toFloat(), y, paint)
-        for (i in 0..50) {
-            val volume = list[i]
-            val x = value + i * width / 50
-            canvas.drawLine(x, y, x, y + volume, paint)
-            canvas.drawLine(x, y - volume, x, y, paint)
-        }
-        val value2 = value - width
-        for (i in 0..50) {
-            val volume = list[i]
-            val x = value2 + i * width / 50
-            canvas.drawLine(x, y, x, y + volume, paint)
-            canvas.drawLine(x, y - volume, x, y, paint)
-        }
+        this.canvas = canvas
+        drawView()
     }
 
-
-    fun startAnimation() {
-        val time = 5000L
-        val anim = ValueAnimator.ofFloat(value, width.toFloat())
-        anim.repeatCount = ValueAnimator.INFINITE
-        anim.repeatMode = ValueAnimator.RESTART
-        anim.duration = time
-        anim.interpolator = LinearInterpolator()
-        anim.addUpdateListener { animation ->
-            value = animation.animatedValue as Float
-            postInvalidate()
-        }
-        anim.start()
-        val timer = Timer()
-        val timerTask = object : TimerTask() {
-            override fun run() {
-                pop()
+    /**
+     * 绘制视图
+     */
+    private fun drawView() {
+        val h = height / 2f
+        val w = width * 1f
+        canvas.drawLine(0f, h, w, h, paint)
+        val end = data.size
+        val start = if (end < count) 0 else end - count
+        val flagDrawList = mutableListOf<Pair<Float, Int>>()
+        //绘制音波线
+        for (i in start until end) {
+            val volume = data[i] * h
+            val x = (i - start) * w / count
+            canvas.drawLine(x, h, x, h + volume, paint)
+            canvas.drawLine(x, h - volume, x, h, paint)
+            if (flag.contains(i)) {
+                flagDrawList.add(Pair(x, flag.indexOf(i)))
             }
         }
-        timer.schedule(timerTask, time / 50, time / 50)
-    }
-
-    val list by lazy {
-        val s = mutableListOf<Float>()
-        for (i in 0..50) {
-            s.add(i * 2f)
+        //绘制标志旗
+        flagDrawList.forEach {
+            drawFlag(it.first, it.second + 1, h)
         }
-        s
     }
 
-    fun getVolume(): Float {
-        return Random(System.currentTimeMillis()).nextFloat() * 120f
+    /**
+     * 绘制旗子
+     *
+     * @param x 中心点x坐标
+     * @param i 旗子上的数字
+     * @param h 视图的半高，用以确定旗子的y坐标
+     */
+    private fun drawFlag(x: Float, i: Int, h: Float) {
+        val flagPath = Path()
+        val flagViewHeight = h / 4
+        flagPath.moveTo(x, flagViewHeight)
+        flagPath.lineTo(x + flagWidth, flagViewHeight)
+        flagPath.lineTo(x + flagWidth, flagViewHeight + flagHeight)
+        flagPath.lineTo(x, flagViewHeight + flagHeight)
+        flagPath.close()
+        canvas.drawPath(flagPath, flagPaint)
+        canvas.drawLine(x, flagViewHeight, x, h * 2, flagPaint)
+        val baseLineY = getBaseLineY(textPaint, flagViewHeight + (flagHeight / 2))
+        canvas.drawText(i.toString(), x + (flagWidth / 2), baseLineY, textPaint)
+    }
+
+    /**
+     * 启动动画
+     */
+    fun startAnimation() {
+        if (timer == null) {
+            val timerTask = object : TimerTask() {
+                override fun run() {
+                    setVolume()
+                    postInvalidate()
+                }
+            }
+            timer = Timer()
+            timer?.schedule(timerTask, 0, time / count)
+        }
+    }
+
+    /**
+     * 停止动画
+     */
+    fun stopAnimation() {
+        timer?.cancel()
+        timer = null
     }
 
 
-    fun pop() {
-        list[0] = getVolume()
-
+    /**
+     * 插入音量值方法
+     */
+    fun setVolume() {
+        val volume = (0..1000).random() / 1000f - 0.03f
+        data.add(volume)
     }
+
+
+    /**
+     * 插入标记旗
+     */
+    fun setFlag() {
+        val time = System.currentTimeMillis()
+        if (time - minTimeTag > minTimeInterval) {
+            minTimeTag = time
+            flag.add(data.size - 1)
+        }
+    }
+
+
+    /**
+     * 计算基线坐标
+     *
+     * @param paint 画笔，其粗细、字体大小等会影响到计算基线
+     * @param centerY 中心点Y坐标
+     */
+    private fun getBaseLineY(paint: Paint, centerY: Float): Float {
+        val fontMetrics = paint.fontMetrics
+        return centerY + (fontMetrics.descent - fontMetrics.ascent) / 2 - fontMetrics.descent
+    }
+
 }
 
