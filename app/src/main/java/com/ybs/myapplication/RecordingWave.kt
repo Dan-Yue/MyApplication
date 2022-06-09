@@ -1,7 +1,6 @@
 package com.ybs.myapplication
 
 import android.content.Context
-import android.content.res.TypedArray
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -14,10 +13,8 @@ import java.util.*
 /**
  * Created by DanYue on 2022/6/7 14:23.
  */
-class RecorderWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
+class RecordingWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
     View(context, attrs, defStyleAttr) {
-
-    private var defaultSize = 0
 
     //音波图线条的个数
     private val count = 100
@@ -73,12 +70,6 @@ class RecorderWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
             it.textSize = 24f
             it.isFakeBoldText = true
         }
-    }
-
-    init {
-        val a: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.RecorderWave)
-        defaultSize = a.getDimensionPixelSize(R.styleable.RecorderWave_default_size, 100)
-        a.recycle()
     }
 
     constructor(context: Context) : this(context, null, 0)
@@ -139,6 +130,25 @@ class RecorderWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
     }
 
     /**
+     * 计算基线坐标
+     *
+     * @param paint 画笔，其粗细、字体大小等会影响到计算基线
+     * @param centerY 中心点Y坐标
+     */
+    private fun getBaseLineY(paint: Paint, centerY: Float): Float {
+        val fontMetrics = paint.fontMetrics
+        return centerY + (fontMetrics.descent - fontMetrics.ascent) / 2 - fontMetrics.descent
+    }
+
+    /**
+     * 插入音量值方法
+     */
+    fun setVolume() {
+        val volume = (0..1000).random() / 1000f - 0.03f
+        data.add(volume)
+    }
+
+    /**
      * 启动动画
      */
     fun startAnimation() {
@@ -162,16 +172,6 @@ class RecorderWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         timer = null
     }
 
-
-    /**
-     * 插入音量值方法
-     */
-    fun setVolume() {
-        val volume = (0..1000).random() / 1000f - 0.03f
-        data.add(volume)
-    }
-
-
     /**
      * 插入标记旗
      */
@@ -181,18 +181,6 @@ class RecorderWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
             minTimeTag = time
             flag.add(data.size - 1)
         }
-    }
-
-
-    /**
-     * 计算基线坐标
-     *
-     * @param paint 画笔，其粗细、字体大小等会影响到计算基线
-     * @param centerY 中心点Y坐标
-     */
-    private fun getBaseLineY(paint: Paint, centerY: Float): Float {
-        val fontMetrics = paint.fontMetrics
-        return centerY + (fontMetrics.descent - fontMetrics.ascent) / 2 - fontMetrics.descent
     }
 
 }

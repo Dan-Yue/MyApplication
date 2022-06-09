@@ -5,13 +5,32 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-
-    <com.ybs.myapplication.RecorderWave
-        android:id="@+id/recorder"
+    <com.ybs.myapplication.RecordedWave
+        android:visibility="gone"
+        android:id="@+id/RecordedWave"
         android:layout_width="match_parent"
         android:layout_height="335dp"
         android:background="@color/hui"
         hc:default_size="335dp" />
+
+    <com.ybs.myapplication.RecordingWave
+        android:visibility="gone"
+        android:id="@+id/RecordingWave"
+        android:layout_width="match_parent"
+        android:layout_height="335dp"
+        android:background="@color/hui" />
+
+    <Button
+        android:id="@+id/recording"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="录音"/>
+
+    <Button
+        android:id="@+id/recorded"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="处理"/>
 
     <Button
         android:id="@+id/start"
