@@ -93,7 +93,6 @@ class RecordedWave(
     private var p = 1080f //中心点
     private var m = 1f//倍数
     private var m1 = 1f
-    private var a3 = 0f
 
     private fun drawView() {
         Log.d("--x", "00000")
@@ -110,10 +109,6 @@ class RecordedWave(
         if (m > max.toFloat()) {
             m = max.toFloat()
         }
-        var move = 0f
-        if (a3 != 0f) {
-            move = a3 - a1
-        }
         val h = height / 2f
         val w = width * 1f
         canvas.drawLine(0f, h, w, h, paint)
@@ -124,7 +119,7 @@ class RecordedWave(
         for (i in start until end) {
             val volume = data[i] * h
             val k = (i - start) * w / end
-            val x = k * m - (p * m - p) + move
+            val x = k * m - (p * m - p)
             canvas.drawLine(x, h, x, h + volume, paint)
             canvas.drawLine(x, h - volume, x, h, paint)
             if (flag.contains(i)) {
@@ -171,31 +166,14 @@ class RecordedWave(
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
             MotionEvent.ACTION_MOVE -> {
-                Log.d("--x", "2222")
                 setScalingStart(event)
-                setMoveStart(event)
                 invalidate()
             }
             MotionEvent.ACTION_UP -> {
-                Log.d("--x", "11111")
                 setScalingEnd()
-                setMoveEnd()
             }
         }
         return true
-    }
-
-    private fun setMoveStart(event: MotionEvent) {
-        val x1 = event.getX(0)
-        var x2 = 0f
-        if (event.pointerCount == 2) {
-            x2 = event.getX(1)
-        }
-        if (x1 != 0f && x2 == 0f) {
-            if (a3 == 0f) {
-                a3 = x1
-            }
-        }
     }
 
     private fun setScalingStart(event: MotionEvent) {
@@ -223,19 +201,6 @@ class RecordedWave(
     private fun setScalingEnd() {
         isStart = false
         m1 = m
-    }
-
-    private fun setMoveEnd() {
-        a3 = 0f
-    }
-
-    private fun getEvent(tag: String, event: MotionEvent) {
-        val x1 = event.getX(0)
-        var x2 = 0f
-        if (event.pointerCount == 2) {
-            x2 = event.getX(1)
-        }
-        Log.d(tag, "x1 = $x1 , x2 = $x2")
     }
 }
 
