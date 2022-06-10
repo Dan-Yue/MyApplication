@@ -93,16 +93,18 @@ class RecordedWave(
     private var p = 1080f //中心点
     private var m = 1f//倍数
     private var m1 = 1f
+    private var p1 = 0f
 
     private fun drawView() {
-        Log.d("--x", "00000")
         val max = data.size / 100 * 10
-        p = (a2 - a1) / 2 + a1 //中心点
-        m = if (isStart) {
-            m1 * (b2 - b1) / (a2 - a1)
+        if (isStart) {
+            m = m1 * (b2 - b1) / (a2 - a1)
+            p = (a2 - a1) / 2 + a1
         } else {
-            m1
+            m = m1
+            p = p1
         }
+
         if (m < 1.0f) {
             m = 1.0f
         }
@@ -119,7 +121,7 @@ class RecordedWave(
         for (i in start until end) {
             val volume = data[i] * h
             val k = (i - start) * w / end
-            val x = k * m - (p * m - p)
+            val x = m * k - (m * p - p)
             canvas.drawLine(x, h, x, h + volume, paint)
             canvas.drawLine(x, h - volume, x, h, paint)
             if (flag.contains(i)) {
@@ -165,6 +167,9 @@ class RecordedWave(
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                isStart = false
+            }
             MotionEvent.ACTION_MOVE -> {
                 setScalingStart(event)
                 invalidate()
@@ -182,6 +187,7 @@ class RecordedWave(
         if (event.pointerCount == 2) {
             x2 = event.getX(1)
         }
+        Log.d("--x", "x1 = $x1 , x2 = $x2")
         if (x1 != 0f && x2 != 0f) {
             if (!isStart) {
                 a1 = x1
@@ -201,6 +207,7 @@ class RecordedWave(
     private fun setScalingEnd() {
         isStart = false
         m1 = m
+        p1 = p
     }
 }
 
