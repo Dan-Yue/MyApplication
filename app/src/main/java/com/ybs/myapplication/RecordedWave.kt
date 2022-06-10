@@ -91,7 +91,6 @@ class RecordedWave(
     private var a2 = 0f
     private var b1 = 0f
     private var b2 = 0f
-    private var p = 0f //中心点
     private var m = 1f//倍数
     private var m1 = 1f
     private var p1 = 0f
@@ -101,6 +100,7 @@ class RecordedWave(
     private var move3 = 0f
 
     private fun drawView() {
+        val p = width / 2
         val h = height / 2f
         val w = width * 1f
         val mo = move2 - move1
@@ -108,19 +108,16 @@ class RecordedWave(
         if (isStart) {
             if (WaveUtil.validChange(mm - 1f, 0.01f)) {
                 m = m1 * mm
-                p = WaveUtil.calculationCenterPoint(a2, a1)
             }
             m = WaveUtil.limitedSize(m, 1f, 100f)
             val leftMove = 0 - (m * p - p) + move3
             val rightMove = m * w - (m * p - p) + move3
             if (leftMove > 0 || rightMove < w) {
                 m = 1f
-                p = 0f
                 move = 0f
             }
         } else {
             m = m1
-            p = p1
             move = if (isMove && abs(mo) > 10f) {
                 val leftMove = 0 - (m * p - p) + (move3 + mo)
                 val rightMove = m * w - (m * p - p) + (move3 + mo)
@@ -234,7 +231,6 @@ class RecordedWave(
         isStart = false
         isMove = false
         m1 = m
-        p1 = p
         move3 = move
     }
 
