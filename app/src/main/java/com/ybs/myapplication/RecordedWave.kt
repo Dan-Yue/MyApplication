@@ -88,42 +88,64 @@ class RecordedWave(
     }
 
     private var a1 = 0f
-    private var a2 = 1080f
+    private var a2 = 0f
     private var b1 = 0f
-    private var b2 = 720f
-    private var p = 1080f //中心点
+    private var b2 = 0f
+    private var p = 0f //中心点
     private var m = 1f//倍数
     private var m1 = 1f
     private var p1 = 0f
+    private var move = 0f
+    private var move1 = 0f
+    private var move2 = 0f
+    private var move3 = 0f
 
     private fun drawView() {
-        val max = data.size / 100 * 10
+        val h = height / 2f
+        val w = width * 1f
+        val mo = move2 - move1
         val mm = (b2 - b1) / (a2 - a1)
-        if (isStart && abs(mm - 1f) > 0.01f) {
-            m = m1 * mm
-            p = (a2 - a1) / 2 + a1
+        if (isStart) {
+            if (WaveUtil.validChange(mm - 1f, 0.01f)) {
+                m = m1 * mm
+                p = WaveUtil.calculationCenterPoint(a2, a1)
+            }
+            m = WaveUtil.limitedSize(m, 1f, 100f)
+            val leftMove = 0 - (m * p - p) + move3
+            val rightMove = m * w - (m * p - p) + move3
+            if (leftMove > 0 || rightMove < w) {
+                m = 1f
+                p = 0f
+                move = 0f
+            }
         } else {
             m = m1
             p = p1
+            move = if (isMove && abs(mo) > 10f) {
+                val leftMove = 0 - (m * p - p) + (move3 + mo)
+                val rightMove = m * w - (m * p - p) + (move3 + mo)
+                when {
+                    leftMove > 0 -> {
+                        m * p - p
+                    }
+                    rightMove < w -> {
+                        w - (m * w - (m * p - p))
+                    }
+                    else -> {
+                        move3 + mo
+                    }
+                }
+            } else {
+                move3
+            }
         }
-
-        if (m < 1.0f) {
-            m = 1.0f
-        }
-        if (m > max.toFloat()) {
-            m = max.toFloat()
-        }
-        val h = height / 2f
-        val w = width * 1f
         canvas.drawLine(0f, h, w, h, paint)
-        val end = data.size
-        val start = 0
         val flagDrawList = mutableListOf<Pair<Float, Int>>()
         //绘制音波线
-        for (i in start until end) {
+        for (i in 0 until data.size) {
             val volume = data[i] * h
-            val k = (i - start) * w / end
-            val x = m * k - (m * p - p)
+            val k = i * w / data.size
+            val x = m * k - (m * p - p) + move
             canvas.drawLine(x, h, x, h + volume, paint)
             canvas.drawLine(x, h - volume, x, h, paint)
             if (flag.contains(i)) {
@@ -146,13 +168,8 @@ class RecordedWave(
         flagPath.close()
         canvas.drawPath(flagPath, flagPaint)
         canvas.drawLine(x, flagViewHeight, x, h * 2, flagPaint)
-        val baseLineY = getBaseLineY(textPaint, flagViewHeight + (flagHeight / 2))
+        val baseLineY = WaveUtil.getBaseLineY(textPaint, flagViewHeight + (flagHeight / 2))
         canvas.drawText(i.toString(), x + (flagWidth / 2), baseLineY, textPaint)
-    }
-
-    private fun getBaseLineY(paint: Paint, centerY: Float): Float {
-        val fontMetrics = paint.fontMetrics
-        return centerY + (fontMetrics.descent - fontMetrics.ascent) / 2 - fontMetrics.descent
     }
 
 
@@ -171,6 +188,7 @@ class RecordedWave(
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 isStart = false
+                move1 = event.getX(0)
             }
             MotionEvent.ACTION_MOVE -> {
                 setScalingStart(event)
@@ -191,6 +209,7 @@ class RecordedWave(
         }
         Log.d("--x", "x1 = $x1 , x2 = $x2")
         if (x1 != 0f && x2 != 0f) {
+            isMove = false
             if (!isStart) {
                 a1 = x1
                 a2 = x2
@@ -202,14 +221,22 @@ class RecordedWave(
                 b2 = x2
             }
         }
+        if (x1 != 0f && x2 == 0f) {
+            move2 = x1
+            isMove = true
+        }
     }
 
     var isStart = false
+    var isMove = false
 
     private fun setScalingEnd() {
         isStart = false
+        isMove = false
         m1 = m
         p1 = p
+        move3 = move
     }
+
 }
 
