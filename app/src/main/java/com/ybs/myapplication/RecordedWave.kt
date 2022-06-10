@@ -10,6 +10,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import kotlin.math.abs
 
 
 /**
@@ -97,8 +98,9 @@ class RecordedWave(
 
     private fun drawView() {
         val max = data.size / 100 * 10
-        if (isStart) {
-            m = m1 * (b2 - b1) / (a2 - a1)
+        val mm = (b2 - b1) / (a2 - a1)
+        if (isStart && abs(mm - 1f) > 0.01f) {
+            m = m1 * mm
             p = (a2 - a1) / 2 + a1
         } else {
             m = m1
