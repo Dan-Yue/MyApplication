@@ -7,29 +7,24 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.util.AttributeSet
+import android.util.Log
+import android.view.MotionEvent
 import android.view.View
-import java.util.*
 
 
 /**
  * Created by DanYue on 2022/6/7 14:23.
  */
-class RecordedWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
-    View(context, attrs, defStyleAttr) {
+class RecordedWave(
+    context: Context,
+    attrs: AttributeSet?,
+    defStyleAttr: Int
+) : View(context, attrs, defStyleAttr) {
 
     private var defaultSize = 0
 
-    //音波图线条的个数
-    private val count = 100
-
-    //音波图运动一个屏幕宽度需要的时间
-    private val time = 10000L
-
     //音量值列表
     private val data = mutableListOf<Float>()
-
-    //定时器，用来形成音波图的变化
-    private var timer: Timer? = null
 
     //旗子插入的地方，列表形式，内容为音量值列表的下标
     private val flag = mutableListOf<Int>()
@@ -91,20 +86,45 @@ class RecordedWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         drawView()
     }
 
-    /**
-     * 绘制视图
-     */
+    private var a1 = 0f
+    private var a2 = 1080f
+    private var b1 = 0f
+    private var b2 = 720f
+    private var p = 1080f //中心点
+    private var m = 1f//倍数
+    private var m1 = 1f
+    private var a3 = 0f
+
     private fun drawView() {
+        Log.d("--x", "00000")
+        val max = data.size / 100 * 10
+        p = (a2 - a1) / 2 + a1 //中心点
+        m = if (isStart) {
+            m1 * (b2 - b1) / (a2 - a1)
+        } else {
+            m1
+        }
+        if (m < 1.0f) {
+            m = 1.0f
+        }
+        if (m > max.toFloat()) {
+            m = max.toFloat()
+        }
+        var move = 0f
+        if (a3 != 0f) {
+            move = a3 - a1
+        }
         val h = height / 2f
         val w = width * 1f
         canvas.drawLine(0f, h, w, h, paint)
         val end = data.size
-        val start = if (end < count) 0 else end - count
+        val start = 0
         val flagDrawList = mutableListOf<Pair<Float, Int>>()
         //绘制音波线
         for (i in start until end) {
             val volume = data[i] * h
-            val x = (i - start) * w / count
+            val k = (i - start) * w / end
+            val x = k * m - (p * m - p) + move
             canvas.drawLine(x, h, x, h + volume, paint)
             canvas.drawLine(x, h - volume, x, h, paint)
             if (flag.contains(i)) {
@@ -117,13 +137,6 @@ class RecordedWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         }
     }
 
-    /**
-     * 绘制旗子
-     *
-     * @param x 中心点x坐标
-     * @param i 旗子上的数字
-     * @param h 视图的半高，用以确定旗子的y坐标
-     */
     private fun drawFlag(x: Float, i: Int, h: Float) {
         val flagPath = Path()
         val flagViewHeight = h / 4
@@ -138,59 +151,91 @@ class RecordedWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         canvas.drawText(i.toString(), x + (flagWidth / 2), baseLineY, textPaint)
     }
 
-    /**
-     * 计算基线坐标
-     *
-     * @param paint 画笔，其粗细、字体大小等会影响到计算基线
-     * @param centerY 中心点Y坐标
-     */
     private fun getBaseLineY(paint: Paint, centerY: Float): Float {
         val fontMetrics = paint.fontMetrics
         return centerY + (fontMetrics.descent - fontMetrics.ascent) / 2 - fontMetrics.descent
     }
 
-    /**
-     * 插入音量值方法
-     */
-    fun setVolume() {
-        val volume = (0..1000).random() / 1000f - 0.03f
-        data.add(volume)
+
+    fun initData() {
+        for (i in 0 until 1000) {
+            val volume = (0..1000).random() / 1000f - 0.03f
+            data.add(volume)
+        }
+        flag.add(20)
+        flag.add(390)
+        flag.add(500)
     }
 
-    /**
-     * 启动动画
-     */
-    fun startAnimation() {
-        if (timer == null) {
-            val timerTask = object : TimerTask() {
-                override fun run() {
-                    setVolume()
-                    postInvalidate()
-                }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        when (event.action) {
+            MotionEvent.ACTION_MOVE -> {
+                Log.d("--x", "2222")
+                setScalingStart(event)
+                setMoveStart(event)
+                invalidate()
             }
-            timer = Timer()
-            timer?.schedule(timerTask, 0, time / count)
+            MotionEvent.ACTION_UP -> {
+                Log.d("--x", "11111")
+                setScalingEnd()
+                setMoveEnd()
+            }
+        }
+        return true
+    }
+
+    private fun setMoveStart(event: MotionEvent) {
+        val x1 = event.getX(0)
+        var x2 = 0f
+        if (event.pointerCount == 2) {
+            x2 = event.getX(1)
+        }
+        if (x1 != 0f && x2 == 0f) {
+            if (a3 == 0f) {
+                a3 = x1
+            }
         }
     }
 
-    /**
-     * 停止动画
-     */
-    fun stopAnimation() {
-        timer?.cancel()
-        timer = null
-    }
-
-    /**
-     * 插入标记旗
-     */
-    fun setFlag() {
-        val time = System.currentTimeMillis()
-        if (time - minTimeTag > minTimeInterval) {
-            minTimeTag = time
-            flag.add(data.size - 1)
+    private fun setScalingStart(event: MotionEvent) {
+        val x1 = event.getX(0)
+        var x2 = 0f
+        if (event.pointerCount == 2) {
+            x2 = event.getX(1)
+        }
+        if (x1 != 0f && x2 != 0f) {
+            if (!isStart) {
+                a1 = x1
+                a2 = x2
+                b1 = x1
+                b2 = x2
+                isStart = true
+            } else {
+                b1 = x1
+                b2 = x2
+            }
         }
     }
 
+    var isStart = false
+
+    private fun setScalingEnd() {
+        isStart = false
+        m1 = m
+    }
+
+    private fun setMoveEnd() {
+        a3 = 0f
+    }
+
+    private fun getEvent(tag: String, event: MotionEvent) {
+        val x1 = event.getX(0)
+        var x2 = 0f
+        if (event.pointerCount == 2) {
+            x2 = event.getX(1)
+        }
+        Log.d(tag, "x1 = $x1 , x2 = $x2")
+    }
 }
 

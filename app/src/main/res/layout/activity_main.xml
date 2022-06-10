@@ -6,48 +6,10 @@
     android:orientation="vertical">
 
     <com.ybs.myapplication.RecordedWave
-        android:visibility="gone"
         android:id="@+id/RecordedWave"
         android:layout_width="match_parent"
         android:layout_height="335dp"
         android:background="@color/hui"
         hc:default_size="335dp" />
-
-    <com.ybs.myapplication.RecordingWave
-        android:visibility="gone"
-        android:id="@+id/RecordingWave"
-        android:layout_width="match_parent"
-        android:layout_height="335dp"
-        android:background="@color/hui" />
-
-    <Button
-        android:id="@+id/recording"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="录音"/>
-
-    <Button
-        android:id="@+id/recorded"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="处理"/>
-
-    <Button
-        android:id="@+id/start"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="开始" />
-
-    <Button
-        android:id="@+id/stop"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="停止" />
-
-    <Button
-        android:id="@+id/flag"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="插旗" />
 
 </LinearLayout>
