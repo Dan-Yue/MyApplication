@@ -36,4 +36,12 @@ object WaveUtil {
     fun validChange(value: Float, range: Float): Boolean {
         return abs(value) > range
     }
+
+    fun setFirst(pair: Pair<Float, Float>, value: Float): Pair<Float, Float> {
+        return pair.copy(value, pair.second)
+    }
+
+    fun setSecond(pair: Pair<Float, Float>, value: Float): Pair<Float, Float> {
+        return pair.copy(pair.first, value)
+    }
 }

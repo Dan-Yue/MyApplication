@@ -80,48 +80,49 @@ class RecordedWave(
         drawView()
     }
 
-    private var startDistance = 1f
-    private var endDistance = 0f
-
-    private var moveDistance = 0f
-    private var moveSave = 0f
-
-    private var m = 1f
-    private var m1 = 1f
-
-    private var movePaint = Pair(0f, 0f)
+    private var scaleDistance = Pair(0f, 0f)
+    private var centerPoint = Pair(0f, 0f)
+    private var scale = Pair(1f, 1f)
+    private var moveDistance = Pair(0f, 0f)
+    private var movePoint = Pair(0f, 0f)
 
     private fun drawView() {
-        val p = width / 2
         val h = height / 2f
         val w = width * 1f
-        val mo = movePaint.second - movePaint.first
-        if (startDistance == 0f) startDistance = 1f
-        val mm = endDistance / startDistance
+        val mo = movePoint.second - movePoint.first
+        val mm = scaleDistance.second / scaleDistance.first
         if (isStart) {
             if (WaveUtil.validChange(mm - 1f, 0.01f)) {
-                m = m1 * mm
+                scale = WaveUtil.setFirst(scale, scale.second * mm)
+                centerPoint = WaveUtil.setFirst(centerPoint, w / 2)
             }
-            m = WaveUtil.limitedSize(m, 1f, 100f)
-            val leftMove = 0 - (m * p - p) + moveSave
-            val rightMove = m * w - (m * p - p) + moveSave
+            scale = WaveUtil.setFirst(scale, WaveUtil.limitedSize(scale.first, 1f, 100f))
+            val leftMove =
+                0 - (scale.first * centerPoint.first - centerPoint.first) + moveDistance.second
+            val rightMove =
+                scale.first * w - (scale.first * centerPoint.first - centerPoint.first) + moveDistance.second
             if (leftMove > 0 || rightMove < w) {
-                m = 1f
-                moveDistance = 0f
+                scale = WaveUtil.setFirst(scale, 1f)
+                centerPoint = WaveUtil.setFirst(centerPoint, 0f)
+                moveDistance = WaveUtil.setFirst(moveDistance, 0f)
             }
         } else {
-            m = m1
-            moveDistance = if (isMove && abs(mo) > 10f) {
-                val leftMove = 0 - (m * p - p) + (moveSave + mo)
-                val rightMove = m * w - (m * p - p) + (moveSave + mo)
+            scale = WaveUtil.setFirst(scale, scale.second)
+            centerPoint = WaveUtil.setFirst(centerPoint, centerPoint.second)
+            val move = if (isMove && abs(mo) > 10f) {
+                val leftMove =
+                    0 - (scale.first * centerPoint.first - centerPoint.first) + (moveDistance.second + mo)
+                val rightMove =
+                    scale.first * w - (scale.first * centerPoint.first - centerPoint.first) + (moveDistance.second + mo)
                 when {
-                    leftMove > 0 -> m * p - p
-                    rightMove < w -> w - (m * w - (m * p - p))
-                    else -> moveSave + mo
+                    leftMove > 0 -> scale.first * centerPoint.first - centerPoint.first
+                    rightMove < w -> w - (scale.first * w - (scale.first * centerPoint.first - centerPoint.first))
+                    else -> moveDistance.second + mo
                 }
             } else {
-                moveSave
+                moveDistance.second
             }
+            moveDistance = WaveUtil.setFirst(moveDistance, move)
         }
         canvas.drawLine(0f, h, w, h, paint)
         val flagDrawList = mutableListOf<Pair<Float, Int>>()
@@ -129,7 +130,8 @@ class RecordedWave(
         for (i in 0 until data.size) {
             val volume = data[i] * h
             val k = i * w / data.size
-            val x = m * k - (m * p - p) + moveDistance
+            val x =
+                scale.first * k - (scale.first * centerPoint.first - centerPoint.first) + moveDistance.first
             canvas.drawLine(x, h, x, h + volume, paint)
             canvas.drawLine(x, h - volume, x, h, paint)
             if (flag.contains(i)) {
@@ -172,7 +174,7 @@ class RecordedWave(
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 isStart = false
-                movePaint = Pair(event.getX(0), movePaint.second)
+                movePoint = WaveUtil.setFirst(movePoint, event.getX(0))
             }
             MotionEvent.ACTION_MOVE -> {
                 setScalingStart(event)
@@ -193,14 +195,14 @@ class RecordedWave(
         }
         if (x1 != 0f && x2 != 0f) {
             isMove = false
-            endDistance = x2 - x1
+            scaleDistance = WaveUtil.setSecond(scaleDistance, x2 - x1)
             if (!isStart) {
-                startDistance = x2 - x1
+                scaleDistance = WaveUtil.setFirst(scaleDistance, x2 - x1)
                 isStart = true
             }
         }
         if (x1 != 0f && x2 == 0f) {
-            movePaint = Pair(movePaint.first, x1)
+            movePoint = WaveUtil.setSecond(movePoint, x1)
             isMove = true
         }
     }
@@ -211,9 +213,10 @@ class RecordedWave(
     private fun setScalingEnd() {
         isStart = false
         isMove = false
-        m1 = m
-        moveSave = moveDistance
+        scale = WaveUtil.setSecond(scale, scale.first)
+        centerPoint = WaveUtil.setSecond(centerPoint, centerPoint.first)
+        moveDistance = WaveUtil.setSecond(moveDistance, moveDistance.first)
     }
-
 }
+
 
