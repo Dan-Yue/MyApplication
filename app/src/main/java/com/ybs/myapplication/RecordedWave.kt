@@ -7,7 +7,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import kotlin.math.abs
@@ -38,12 +37,6 @@ class RecordedWave(
 
     //画布
     private var canvas = Canvas()
-
-    //用来记录上次插旗时间戳
-    private var minTimeTag = 0L
-
-    //插旗的最小时间间隔，不允许快速连续插旗
-    private val minTimeInterval = 1000L
 
     //绘制音波图的画笔
     private val paint by lazy {
@@ -87,53 +80,47 @@ class RecordedWave(
         drawView()
     }
 
-    private var a1 = 0f
-    private var a2 = 0f
-    private var b1 = 0f
-    private var b2 = 0f
-    private var m = 1f//倍数
+    private var startDistance = 1f
+    private var endDistance = 0f
+
+    private var moveDistance = 0f
+    private var moveSave = 0f
+
+    private var m = 1f
     private var m1 = 1f
-    private var p1 = 0f
-    private var move = 0f
-    private var move1 = 0f
-    private var move2 = 0f
-    private var move3 = 0f
+
+    private var movePaint = Pair(0f, 0f)
 
     private fun drawView() {
         val p = width / 2
         val h = height / 2f
         val w = width * 1f
-        val mo = move2 - move1
-        val mm = (b2 - b1) / (a2 - a1)
+        val mo = movePaint.second - movePaint.first
+        if (startDistance == 0f) startDistance = 1f
+        val mm = endDistance / startDistance
         if (isStart) {
             if (WaveUtil.validChange(mm - 1f, 0.01f)) {
                 m = m1 * mm
             }
             m = WaveUtil.limitedSize(m, 1f, 100f)
-            val leftMove = 0 - (m * p - p) + move3
-            val rightMove = m * w - (m * p - p) + move3
+            val leftMove = 0 - (m * p - p) + moveSave
+            val rightMove = m * w - (m * p - p) + moveSave
             if (leftMove > 0 || rightMove < w) {
                 m = 1f
-                move = 0f
+                moveDistance = 0f
             }
         } else {
             m = m1
-            move = if (isMove && abs(mo) > 10f) {
-                val leftMove = 0 - (m * p - p) + (move3 + mo)
-                val rightMove = m * w - (m * p - p) + (move3 + mo)
+            moveDistance = if (isMove && abs(mo) > 10f) {
+                val leftMove = 0 - (m * p - p) + (moveSave + mo)
+                val rightMove = m * w - (m * p - p) + (moveSave + mo)
                 when {
-                    leftMove > 0 -> {
-                        m * p - p
-                    }
-                    rightMove < w -> {
-                        w - (m * w - (m * p - p))
-                    }
-                    else -> {
-                        move3 + mo
-                    }
+                    leftMove > 0 -> m * p - p
+                    rightMove < w -> w - (m * w - (m * p - p))
+                    else -> moveSave + mo
                 }
             } else {
-                move3
+                moveSave
             }
         }
         canvas.drawLine(0f, h, w, h, paint)
@@ -142,7 +129,7 @@ class RecordedWave(
         for (i in 0 until data.size) {
             val volume = data[i] * h
             val k = i * w / data.size
-            val x = m * k - (m * p - p) + move
+            val x = m * k - (m * p - p) + moveDistance
             canvas.drawLine(x, h, x, h + volume, paint)
             canvas.drawLine(x, h - volume, x, h, paint)
             if (flag.contains(i)) {
@@ -185,7 +172,7 @@ class RecordedWave(
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 isStart = false
-                move1 = event.getX(0)
+                movePaint = Pair(event.getX(0), movePaint.second)
             }
             MotionEvent.ACTION_MOVE -> {
                 setScalingStart(event)
@@ -204,22 +191,16 @@ class RecordedWave(
         if (event.pointerCount == 2) {
             x2 = event.getX(1)
         }
-        Log.d("--x", "x1 = $x1 , x2 = $x2")
         if (x1 != 0f && x2 != 0f) {
             isMove = false
+            endDistance = x2 - x1
             if (!isStart) {
-                a1 = x1
-                a2 = x2
-                b1 = x1
-                b2 = x2
+                startDistance = x2 - x1
                 isStart = true
-            } else {
-                b1 = x1
-                b2 = x2
             }
         }
         if (x1 != 0f && x2 == 0f) {
-            move2 = x1
+            movePaint = Pair(movePaint.first, x1)
             isMove = true
         }
     }
@@ -231,7 +212,7 @@ class RecordedWave(
         isStart = false
         isMove = false
         m1 = m
-        move3 = move
+        moveSave = moveDistance
     }
 
 }
