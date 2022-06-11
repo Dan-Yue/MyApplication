@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import kotlin.math.abs
@@ -22,6 +23,27 @@ class RecordedWave(
 ) : View(context, attrs, defStyleAttr) {
 
     private var defaultSize = 0
+
+    //最开始双指间的距离和结束时双指间的距离
+    private var scaleDistance = Pair(0f, 0f)
+
+    //中心点和中心点缓存
+    private var centerPoint = Pair(0f, 0f)
+
+    //缩放倍数和缩放倍数缓存
+    private var scale = Pair(1f, 1f)
+
+    //移动距离和移动距离缓存
+    private var moveDistance = Pair(0f, 0f)
+
+    //最开始手指的坐标和结束时手指的坐标
+    private var movePoint = Pair(0f, 0f)
+
+    //是否是双指滑动
+    private var isScale = false
+
+    //是否是单指滑动
+    private var isMove = false
 
     //音量值列表
     private val data = mutableListOf<Float>()
@@ -80,20 +102,14 @@ class RecordedWave(
         drawView()
     }
 
-    private var scaleDistance = Pair(0f, 0f)
-    private var centerPoint = Pair(0f, 0f)
-    private var scale = Pair(1f, 1f)
-    private var moveDistance = Pair(0f, 0f)
-    private var movePoint = Pair(0f, 0f)
-
     private fun drawView() {
         val h = height / 2f
         val w = width * 1f
-        val mo = movePoint.second - movePoint.first
-        val mm = scaleDistance.second / scaleDistance.first
-        if (isStart) {
-            if (WaveUtil.validChange(mm - 1f, 0.01f)) {
-                scale = WaveUtil.setFirst(scale, scale.second * mm)
+        val moveLength = movePoint.second - movePoint.first
+        val distance = scaleDistance.second / scaleDistance.first
+        if (isScale) {
+            if (WaveUtil.validChange(distance - 1f, 0.01f)) {
+                scale = WaveUtil.setFirst(scale, scale.second * distance)
                 centerPoint = WaveUtil.setFirst(centerPoint, w / 2)
             }
             scale = WaveUtil.setFirst(scale, WaveUtil.limitedSize(scale.first, 1f, 100f))
@@ -109,15 +125,15 @@ class RecordedWave(
         } else {
             scale = WaveUtil.setFirst(scale, scale.second)
             centerPoint = WaveUtil.setFirst(centerPoint, centerPoint.second)
-            val move = if (isMove && abs(mo) > 10f) {
+            val move = if (isMove && abs(moveLength) > 10f) {
                 val leftMove =
-                    0 - (scale.first * centerPoint.first - centerPoint.first) + (moveDistance.second + mo)
+                    0 - (scale.first * centerPoint.first - centerPoint.first) + (moveDistance.second + moveLength)
                 val rightMove =
-                    scale.first * w - (scale.first * centerPoint.first - centerPoint.first) + (moveDistance.second + mo)
+                    scale.first * w - (scale.first * centerPoint.first - centerPoint.first) + (moveDistance.second + moveLength)
                 when {
                     leftMove > 0 -> scale.first * centerPoint.first - centerPoint.first
                     rightMove < w -> w - (scale.first * w - (scale.first * centerPoint.first - centerPoint.first))
-                    else -> moveDistance.second + mo
+                    else -> moveDistance.second + moveLength
                 }
             } else {
                 moveDistance.second
@@ -173,7 +189,7 @@ class RecordedWave(
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                isStart = false
+                isScale = false
                 movePoint = WaveUtil.setFirst(movePoint, event.getX(0))
             }
             MotionEvent.ACTION_MOVE -> {
@@ -196,9 +212,9 @@ class RecordedWave(
         if (x1 != 0f && x2 != 0f) {
             isMove = false
             scaleDistance = WaveUtil.setSecond(scaleDistance, x2 - x1)
-            if (!isStart) {
+            if (!isScale) {
                 scaleDistance = WaveUtil.setFirst(scaleDistance, x2 - x1)
-                isStart = true
+                isScale = true
             }
         }
         if (x1 != 0f && x2 == 0f) {
@@ -207,15 +223,15 @@ class RecordedWave(
         }
     }
 
-    var isStart = false
-    var isMove = false
-
     private fun setScalingEnd() {
-        isStart = false
+        isScale = false
         isMove = false
         scale = WaveUtil.setSecond(scale, scale.first)
         centerPoint = WaveUtil.setSecond(centerPoint, centerPoint.first)
         moveDistance = WaveUtil.setSecond(moveDistance, moveDistance.first)
+        if (!WaveUtil.validChange(movePoint.second - movePoint.first, 10f)) {
+            Log.d("--test", ">>>${movePoint.first}")
+        }
     }
 }
 

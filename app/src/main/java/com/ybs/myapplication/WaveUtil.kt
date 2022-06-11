@@ -19,13 +19,6 @@ object WaveUtil {
     }
 
     /**
-     * 计算中心点
-     */
-    fun calculationCenterPoint(from: Float, to: Float): Float {
-        return (to - from) / 2 + from
-    }
-
-    /**
      * 基线纵坐标
      */
     fun getBaseLineY(paint: Paint, centerY: Float): Float {
