@@ -11,5 +11,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val recordedWave = findViewById<RecordedWave>(R.id.RecordedWave)
         recordedWave.initData()
+        recordedWave.setFlagClickListener { pointF, i, fl, fl2 -> }
+        recordedWave.setScaleOffsetListener { fl, fl2 -> }
     }
 }
