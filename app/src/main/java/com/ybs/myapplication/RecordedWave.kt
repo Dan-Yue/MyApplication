@@ -244,9 +244,9 @@ class RecordedWave(
         centerPoint = WaveUtil.setSecond(centerPoint, centerPoint.first)
         offset = WaveUtil.setSecond(offset, offset.first)
         if (!WaveUtil.validChange(sliding.second.x - sliding.first.x, 10f)) {
-            if (flagClickListener != null) {
-                val index =
-                    WaveUtil.isPointFlag(sliding.first, flagPointList, flagWidth, flagHeight)
+            val index =
+                WaveUtil.isPointFlag(sliding.first, flagPointList, flagWidth, flagHeight)
+            if (flagClickListener != null && index.first >= 0) {
                 Log.d(
                     "flagClickListener",
                     "${index.second}-${index.first}-${scale.second}-${offset.second}"
