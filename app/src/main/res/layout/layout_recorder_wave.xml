@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:hc="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.ybs.myapplication.RecordedWave
+        android:id="@+id/RecordedWave"
+        android:layout_width="match_parent"
+        android:layout_height="335dp"
+        android:background="@color/hui"
+        hc:default_size="335dp" />
+
+    <ImageView
+        android:id="@+id/left"
+        android:layout_width="18dp"
+        android:layout_height="335dp"
+        android:layout_marginStart="50dp"
+        android:scaleType="fitXY"
+        android:src="@mipmap/crop_start" />
+
+</FrameLayout>

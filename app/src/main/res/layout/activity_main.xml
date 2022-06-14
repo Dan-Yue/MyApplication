@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:hc="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.ybs.myapplication.RecordedWave
+    <com.ybs.myapplication.RecorderWave
         android:id="@+id/RecordedWave"
         android:layout_width="match_parent"
         android:layout_height="335dp"
-        android:background="@color/hui"
-        hc:default_size="335dp" />
+        android:background="@color/hui" />
 
 </LinearLayout>

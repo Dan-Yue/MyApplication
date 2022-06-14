@@ -9,9 +9,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val recordedWave = findViewById<RecordedWave>(R.id.RecordedWave)
-        recordedWave.initData()
-        recordedWave.setFlagClickListener { pointF, i, fl, fl2 -> }
-        recordedWave.setScaleOffsetListener { fl, fl2 -> }
+//        val recordedWave = findViewById<RecordedWave>(R.id.RecordedWave)
+//        recordedWave.initData()
+//        recordedWave.setFlagClickListener { pointF, i, fl, fl2 -> }
+//        recordedWave.setScaleOffsetListener { fl, fl2 -> }
     }
 }
