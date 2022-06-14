@@ -38,5 +38,8 @@ class RecorderWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         recorded?.setFlagClickListener { point, _, _, _ ->
             flag?.setRecorderX(point.x)
         }
+        flag?.setClickListener {
+            Log.d("--test", "point:$it")
+        }
     }
 }

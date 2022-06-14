@@ -2,9 +2,11 @@ package com.ybs.myapplication
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.PointF
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.widget.ImageView
+import kotlin.math.abs
 
 
 /**
@@ -14,7 +16,9 @@ import android.widget.ImageView
 class RecorderIndex(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
     ImageView(context, attrs, defStyleAttr) {
 
+    private var clickPoint: PointF = PointF(0f, 0f)
     private var moveX = 0f
+    private var clickListener: ((PointF) -> Unit)? = null
 
     constructor(context: Context) : this(context, null, 0)
 
@@ -25,18 +29,28 @@ class RecorderIndex(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 moveX = event.x
+                clickPoint.set(event.x, event.y)
             }
             MotionEvent.ACTION_MOVE -> {
                 translationX = x + (event.x - moveX)
             }
             MotionEvent.ACTION_UP -> {
-
+                val pointF = PointF(event.x, event.y)
+                val a = abs(clickPoint.x - pointF.x) < 3f
+                val b = abs(clickPoint.y - pointF.y) < 3f
+                if (a && b && clickListener != null) {
+                    clickListener!!(clickPoint)
+                }
             }
         }
-        return super.onTouchEvent(event)
+        return true
     }
 
     fun setRecorderX(recorderX: Float) {
         translationX = recorderX - width
+    }
+
+    fun setClickListener(clickListener: ((PointF) -> Unit)) {
+        this.clickListener = clickListener
     }
 }
