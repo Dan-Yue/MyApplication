@@ -2,10 +2,7 @@ package com.ybs.myapplication
 
 import android.content.Context
 import android.content.res.TypedArray
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Path
+import android.graphics.*
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
@@ -37,7 +34,7 @@ class RecordedWave(
     private var moveDistance = Pair(0f, 0f)
 
     //最开始手指的坐标和结束时手指的坐标
-    private var movePoint = Pair(0f, 0f)
+    private var movePoint = Pair(PointF(0f, 0f), PointF(0f, 0f))
 
     //是否是双指滑动
     private var isScale = false
@@ -102,43 +99,17 @@ class RecordedWave(
         drawView()
     }
 
+    private val flagPointList = mutableListOf<Pair<PointF, Int>>()
+
     private fun drawView() {
         val h = height / 2f
         val w = width * 1f
-        val moveLength = movePoint.second - movePoint.first
+        val moveLength = movePoint.second.x - movePoint.first.x
         val distance = scaleDistance.second / scaleDistance.first
         if (isScale) {
-            if (WaveUtil.validChange(distance - 1f, 0.01f)) {
-                scale = WaveUtil.setFirst(scale, scale.second * distance)
-                centerPoint = WaveUtil.setFirst(centerPoint, w / 2)
-            }
-            scale = WaveUtil.setFirst(scale, WaveUtil.limitedSize(scale.first, 1f, 100f))
-            val leftMove =
-                0 - (scale.first * centerPoint.first - centerPoint.first) + moveDistance.second
-            val rightMove =
-                scale.first * w - (scale.first * centerPoint.first - centerPoint.first) + moveDistance.second
-            if (leftMove > 0 || rightMove < w) {
-                scale = WaveUtil.setFirst(scale, 1f)
-                centerPoint = WaveUtil.setFirst(centerPoint, 0f)
-                moveDistance = WaveUtil.setFirst(moveDistance, 0f)
-            }
+            scaleCalculate(distance, w)
         } else {
-            scale = WaveUtil.setFirst(scale, scale.second)
-            centerPoint = WaveUtil.setFirst(centerPoint, centerPoint.second)
-            val move = if (isMove && abs(moveLength) > 10f) {
-                val leftMove =
-                    0 - (scale.first * centerPoint.first - centerPoint.first) + (moveDistance.second + moveLength)
-                val rightMove =
-                    scale.first * w - (scale.first * centerPoint.first - centerPoint.first) + (moveDistance.second + moveLength)
-                when {
-                    leftMove > 0 -> scale.first * centerPoint.first - centerPoint.first
-                    rightMove < w -> w - (scale.first * w - (scale.first * centerPoint.first - centerPoint.first))
-                    else -> moveDistance.second + moveLength
-                }
-            } else {
-                moveDistance.second
-            }
-            moveDistance = WaveUtil.setFirst(moveDistance, move)
+            moveCalculate(moveLength, w)
         }
         canvas.drawLine(0f, h, w, h, paint)
         val flagDrawList = mutableListOf<Pair<Float, Int>>()
@@ -155,22 +126,62 @@ class RecordedWave(
             }
         }
         //绘制标志旗
+        flagPointList.clear()
         flagDrawList.forEach {
+            val flagX = it.first + flagWidth / 2
+            val flagY = flagHeight / 2
+            val pointF = PointF(flagX, flagY)
+            flagPointList.add(Pair(pointF, it.second + 1))
             drawFlag(it.first, it.second + 1, h)
+        }
+    }
+
+    private fun moveCalculate(moveLength: Float, w: Float) {
+        scale = WaveUtil.setFirst(scale, scale.second)
+        centerPoint = WaveUtil.setFirst(centerPoint, centerPoint.second)
+        val move = if (isMove && abs(moveLength) > 10f) {
+            val leftMove =
+                0 - (scale.first * centerPoint.first - centerPoint.first) + (moveDistance.second + moveLength)
+            val rightMove =
+                scale.first * w - (scale.first * centerPoint.first - centerPoint.first) + (moveDistance.second + moveLength)
+            when {
+                leftMove > 0 -> scale.first * centerPoint.first - centerPoint.first
+                rightMove < w -> w - (scale.first * w - (scale.first * centerPoint.first - centerPoint.first))
+                else -> moveDistance.second + moveLength
+            }
+        } else {
+            moveDistance.second
+        }
+        moveDistance = WaveUtil.setFirst(moveDistance, move)
+    }
+
+    private fun scaleCalculate(distance: Float, w: Float) {
+        if (WaveUtil.validChange(distance - 1f, 0.01f)) {
+            scale = WaveUtil.setFirst(scale, scale.second * distance)
+            centerPoint = WaveUtil.setFirst(centerPoint, w / 2)
+        }
+        scale = WaveUtil.setFirst(scale, WaveUtil.limitedSize(scale.first, 1f, 100f))
+        val leftMove =
+            0 - (scale.first * centerPoint.first - centerPoint.first) + moveDistance.second
+        val rightMove =
+            scale.first * w - (scale.first * centerPoint.first - centerPoint.first) + moveDistance.second
+        if (leftMove > 0 || rightMove < w) {
+            scale = WaveUtil.setFirst(scale, 1f)
+            centerPoint = WaveUtil.setFirst(centerPoint, 0f)
+            moveDistance = WaveUtil.setFirst(moveDistance, 0f)
         }
     }
 
     private fun drawFlag(x: Float, i: Int, h: Float) {
         val flagPath = Path()
-        val flagViewHeight = h / 4
-        flagPath.moveTo(x, flagViewHeight)
-        flagPath.lineTo(x + flagWidth, flagViewHeight)
-        flagPath.lineTo(x + flagWidth, flagViewHeight + flagHeight)
-        flagPath.lineTo(x, flagViewHeight + flagHeight)
+        flagPath.moveTo(x, 0f)
+        flagPath.lineTo(x + flagWidth, 0f)
+        flagPath.lineTo(x + flagWidth, flagHeight)
+        flagPath.lineTo(x, flagHeight)
         flagPath.close()
         canvas.drawPath(flagPath, flagPaint)
-        canvas.drawLine(x, flagViewHeight, x, h * 2, flagPaint)
-        val baseLineY = WaveUtil.getBaseLineY(textPaint, flagViewHeight + (flagHeight / 2))
+        canvas.drawLine(x, 0f, x, h * 2 - flagHeight, flagPaint)
+        val baseLineY = WaveUtil.getBaseLineY(textPaint, flagHeight / 2)
         canvas.drawText(i.toString(), x + (flagWidth / 2), baseLineY, textPaint)
     }
 
@@ -190,7 +201,9 @@ class RecordedWave(
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 isScale = false
-                movePoint = WaveUtil.setFirst(movePoint, event.getX(0))
+                val firstPointF = PointF(event.getX(0), event.getY(0))
+                val secondPointF = movePoint.second
+                movePoint = Pair(firstPointF, secondPointF)
             }
             MotionEvent.ACTION_MOVE -> {
                 setScalingStart(event)
@@ -218,7 +231,9 @@ class RecordedWave(
             }
         }
         if (x1 != 0f && x2 == 0f) {
-            movePoint = WaveUtil.setSecond(movePoint, x1)
+            val firstPointF = movePoint.first
+            val secondPointF = PointF(x1, event.getY(0))
+            movePoint = Pair(firstPointF, secondPointF)
             isMove = true
         }
     }
@@ -229,10 +244,15 @@ class RecordedWave(
         scale = WaveUtil.setSecond(scale, scale.first)
         centerPoint = WaveUtil.setSecond(centerPoint, centerPoint.first)
         moveDistance = WaveUtil.setSecond(moveDistance, moveDistance.first)
-        if (!WaveUtil.validChange(movePoint.second - movePoint.first, 10f)) {
-            Log.d("--test", ">>>${movePoint.first}")
+        if (!WaveUtil.validChange(movePoint.second.x - movePoint.first.x, 10f)) {
+//            Log.d("--test", ">>>${movePoint.first}")
+//            Log.d("--test", "++$flagPointList")
+            val index = WaveUtil.isPointFlag(movePoint.first, flagPointList, flagWidth, flagHeight)
+            Log.d("--test", "======> $index")
         }
     }
+
+
 }
 
 

@@ -1,6 +1,7 @@
 package com.ybs.myapplication
 
 import android.graphics.Paint
+import android.graphics.PointF
 import kotlin.math.abs
 
 /**
@@ -36,5 +37,23 @@ object WaveUtil {
 
     fun setSecond(pair: Pair<Float, Float>, value: Float): Pair<Float, Float> {
         return pair.copy(pair.first, value)
+    }
+
+    fun isPointFlag(
+        pointF: PointF,
+        flagList: MutableList<Pair<PointF, Int>>,
+        flagWidth: Float,
+        flagHeight: Float
+    ): Pair<Int, PointF> {
+        var indexFlag = -1
+        var pointFlag = pointF
+        flagList.forEachIndexed { index, pair ->
+            val point = pair.first
+            if (abs(pointF.x - point.x) < flagWidth && abs(pointF.y - point.y) < flagHeight) {
+                indexFlag = index
+                pointFlag = point
+            }
+        }
+        return Pair(indexFlag, pointFlag)
     }
 }
