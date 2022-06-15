@@ -89,8 +89,8 @@ class RecordedWave(
     //旗子点击监听，参数（被点击旗子的中心点，被点击旗子的数字，音波图的缩放倍数，音波图的偏移）
     private var flagClickListener: ((PointF, Int, Float, Float) -> Unit)? = null
 
-    //缩放移动监听，参数（音波图的缩放倍数，音波图的位移）
-    private var scaleOffsetListener: ((Float, Float) -> Unit)? = null
+    //缩放移动监听，参数（0点X坐标，音波图的缩放倍数，音波图的位移）
+    private var scaleOffsetListener: ((Float, Float, Float) -> Unit)? = null
 
     init {
         val a: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.RecorderWave)
@@ -118,10 +118,6 @@ class RecordedWave(
         } else {
             moveCalculate(moveLength, w)
         }
-        if (scaleOffsetListener != null) {
-            Log.d("scaleOffsetListener", "${scale.first}-${offset.first}")
-            scaleOffsetListener!!(scale.first, offset.first)
-        }
         canvas.drawLine(0f, h, w, h, paint)
         val flagDrawList = mutableListOf<Pair<Float, Int>>()
         //绘制音波线
@@ -132,6 +128,12 @@ class RecordedWave(
                 scale.first * k - (scale.first * centerPoint.first - centerPoint.first) + offset.first
             canvas.drawLine(x, h, x, h + volume, paint)
             canvas.drawLine(x, h - volume, x, h, paint)
+            if (i == 0) {
+                if (scaleOffsetListener != null) {
+                    Log.d("scaleOffsetListener", "${scale.first}-${offset.first}")
+                    scaleOffsetListener!!(x, scale.first, offset.first)
+                }
+            }
             if (flag.contains(i)) {
                 flagDrawList.add(Pair(x, flag.indexOf(i)))
             }
@@ -147,7 +149,7 @@ class RecordedWave(
         }
     }
 
-    private fun moveCalculate(moveLength: Float, w: Float) {
+    private fun moveCalculate(moveLength: Float, w: Float) {3
         scale = WaveUtil.setFirst(scale, scale.second)
         centerPoint = WaveUtil.setFirst(centerPoint, centerPoint.second)
         val move = if (isMove && abs(moveLength) > 10f) {
@@ -260,7 +262,7 @@ class RecordedWave(
         this.flagClickListener = flagListener
     }
 
-    fun setScaleOffsetListener(scaleListener: (Float, Float) -> Unit) {
+    fun setScaleOffsetListener(scaleListener: (Float, Float, Float) -> Unit) {
         this.scaleOffsetListener = scaleListener
     }
 

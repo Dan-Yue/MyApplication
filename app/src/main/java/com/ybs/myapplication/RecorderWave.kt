@@ -39,7 +39,15 @@ class RecorderWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
             flag?.setRecorderX(point.x)
         }
         flag?.setClickListener {
-            Log.d("--test", "point:$it")
+            Log.d("flagClick", "point:$it")
+        }
+        recorded?.setScaleOffsetListener { f0, f1, f2 ->
+            if (f1 > 1f) {
+                val pX1 = flag?.getRecorderX() ?: 0f
+                val pX2 = pX1 / 1080 * f1 + f0
+                Log.d("--test", "f0:$f0,f1:$f1,f2:$f2,pX1:$pX1,pX2:$pX2")
+                flag?.setMoveX(pX1)
+            }
         }
     }
 }

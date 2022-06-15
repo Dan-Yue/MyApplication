@@ -32,7 +32,8 @@ class RecorderIndex(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
                 clickPoint.set(event.x, event.y)
             }
             MotionEvent.ACTION_MOVE -> {
-                translationX = x + (event.x - moveX)
+                xx = x + (event.x - moveX)
+                translationX = xx
             }
             MotionEvent.ACTION_UP -> {
                 val pointF = PointF(event.x, event.y)
@@ -46,8 +47,19 @@ class RecorderIndex(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         return true
     }
 
+    private var xx = 0f
+
     fun setRecorderX(recorderX: Float) {
-        translationX = recorderX - width
+        xx = recorderX - width
+        translationX = xx
+    }
+
+    fun setMoveX(moveX: Float) {
+        translationX = moveX
+    }
+
+    fun getRecorderX(): Float {
+        return xx
     }
 
     fun setClickListener(clickListener: ((PointF) -> Unit)) {
