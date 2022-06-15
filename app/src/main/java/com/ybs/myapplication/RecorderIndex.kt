@@ -36,8 +36,8 @@ class RecorderIndex(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
             }
             MotionEvent.ACTION_UP -> {
                 val pointF = PointF(event.x, event.y)
-                val a = abs(clickPoint.x - pointF.x) < 3f
-                val b = abs(clickPoint.y - pointF.y) < 3f
+                val a = abs(clickPoint.x - pointF.x) < 10f
+                val b = abs(clickPoint.y - pointF.y) < 10f
                 if (a && b && clickListener != null) {
                     clickListener!!(clickPoint)
                 }
