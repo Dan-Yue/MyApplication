@@ -1,13 +1,17 @@
 package com.ybs.myapplication
 
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Path
 import android.graphics.PointF
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.view.animation.LinearInterpolator
 import kotlin.math.abs
 
 
@@ -32,6 +36,7 @@ class RecorderIndex(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
     private var text = "00:00"
     private var isAdd = true
     private var duration = 0
+    private var process = 0
 
     constructor(context: Context) : this(context, null, 0)
 
@@ -144,8 +149,20 @@ class RecorderIndex(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
     }
 
     fun setProgress(process: Int) {
-        val x = process * rootView.width / duration.toFloat()
-        setRecorderX(x)
+        Handler(Looper.myLooper() ?: Looper.getMainLooper()).post {
+            val p = abs(process - this.process).toLong()
+            val anim = ValueAnimator.ofInt(this.process, process)
+            this.process = process
+            anim.repeatCount = 0
+            anim.duration = p
+            anim.interpolator = LinearInterpolator()
+            anim.addUpdateListener { animation ->
+                val p1 = animation.animatedValue as Int
+                val x = p1 * rootView.width / duration.toFloat()
+                setRecorderX(x)
+            }
+            anim.start()
+        }
     }
 
     fun setClickListener(clickListener: ((Float) -> Unit)) {

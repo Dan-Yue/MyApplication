@@ -11,8 +11,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val recorderWave = findViewById<RecorderWave>(R.id.RecorderWave)
-        findViewById<Button>(R.id.test).setOnClickListener {
-            recorderWave.test()
+        findViewById<Button>(R.id.start).setOnClickListener {
+            recorderWave.start()
+        }
+        findViewById<Button>(R.id.stop).setOnClickListener {
+            recorderWave.stop()
         }
 //        recordedWave.initData()
 //        recordedWave.setFlagClickListener { pointF, i, fl, fl2 -> }

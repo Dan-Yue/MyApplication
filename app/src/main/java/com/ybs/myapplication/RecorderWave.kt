@@ -49,16 +49,29 @@ class RecorderWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         flag?.setDuration(10000)
     }
 
-    fun test() {
-        var time = 0
+    private var isStop = false
+    var time = 0
+
+    fun start() {
+        if (time > 10000) {
+            time = 0
+        }
+        isStop = false
         val timer = Timer()
         val timerTask = object : TimerTask() {
             override fun run() {
-                flag?.setProgress(time)
-                time += 100
+                if (isStop) {
+                    timer.cancel()
+                } else {
+                    flag?.setProgress(time)
+                    time += 100
+                }
             }
         }
         timer.schedule(timerTask, 0, 100)
     }
 
+    fun stop() {
+        isStop = true
+    }
 }
