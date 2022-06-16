@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:id="@+id/frame">
 
-    <com.ybs.myapplication.RecordedWave
+    <com.ybs.myapplication.RecordedBackground
         android:id="@+id/recorded"
         android:layout_width="match_parent"
         android:layout_height="335dp"

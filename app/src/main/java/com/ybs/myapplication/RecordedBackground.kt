@@ -13,7 +13,7 @@ import kotlin.math.abs
 /**
  * Created by DanYue on 2022/6/7 14:23.
  */
-class RecordedWave(
+class RecordedBackground(
     context: Context,
     attrs: AttributeSet?,
     defStyleAttr: Int
@@ -164,8 +164,10 @@ class RecordedWave(
         flag.add(50)
     }
 
-    fun setData() {
-        flag.add(75)
+    fun setData(percent: Float) {
+        val i = data.size * percent
+        flag.add(i.toInt())
+        flag.sort()
         postInvalidate()
     }
 

@@ -5,9 +5,15 @@
     android:orientation="vertical">
 
     <com.ybs.myapplication.RecorderWave
-        android:id="@+id/RecordedWave"
+        android:id="@+id/RecorderWave"
         android:layout_width="match_parent"
         android:layout_height="335dp"
         android:background="@color/hui" />
+
+    <Button
+        android:id="@+id/test"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="测试"/>
 
 </LinearLayout>

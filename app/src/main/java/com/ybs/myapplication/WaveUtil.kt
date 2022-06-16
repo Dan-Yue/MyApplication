@@ -75,11 +75,11 @@ object WaveUtil {
         }
     }
 
-    fun getTextPaint(): Paint {
+    fun getTextPaint(textSize: Float = 24f): Paint {
         return Paint(Paint.ANTI_ALIAS_FLAG).also {
             it.textAlign = Paint.Align.CENTER
             it.color = Color.WHITE
-            it.textSize = 24f
+            it.textSize = textSize
             it.isFakeBoldText = true
         }
     }

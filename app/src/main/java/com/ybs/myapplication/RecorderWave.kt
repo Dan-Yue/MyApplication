@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.LinearLayout
+import java.util.*
 
 /**
  * Created by DanYue on 2022/6/14 16:48.
@@ -16,7 +17,7 @@ class RecorderWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
 
     private var frame: View? = null
 
-    private var recorded: RecordedWave? = null
+    private var recorded: RecordedBackground? = null
 
     private var flag: RecorderIndex? = null
 
@@ -42,10 +43,22 @@ class RecorderWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         recorded?.setCrossClickListener { _, i ->
             recorded?.delData(i)
         }
-        flag?.initView()
         flag?.setClickListener {
-            Log.d("flagClick", "point")
-            recorded?.setData()
+            recorded?.setData(it)
         }
+        flag?.setDuration(10000)
     }
+
+    fun test() {
+        var time = 0
+        val timer = Timer()
+        val timerTask = object : TimerTask() {
+            override fun run() {
+                flag?.setProgress(time)
+                time += 100
+            }
+        }
+        timer.schedule(timerTask, 0, 100)
+    }
+
 }

@@ -10,6 +10,7 @@ import android.view.MotionEvent
 import android.view.View
 import kotlin.math.abs
 
+
 /**
  * Created by DanYue on 2022/6/14 17:14.
  */
@@ -19,7 +20,7 @@ class RecorderIndex(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
 
     private var clickPoint: PointF = PointF(0f, 0f)
     private var moveX = 0f
-    private var clickListener: ((PointF) -> Unit)? = null
+    private var clickListener: ((Float) -> Unit)? = null
     private var eventX = 0f
     private var canvas = Canvas()
     private val flagHeight = 32f
@@ -27,16 +28,24 @@ class RecorderIndex(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
     private var flagWidth = 50f
     private val flagPaint by lazy { WaveUtil.getIndexFlagPaint() }
     private val textPaint by lazy { WaveUtil.getTextPaint() }
-    private var text = "12:00"
+    private val addPaint by lazy { WaveUtil.getTextPaint(textSize = 36f) }
+    private var text = "00:00"
+    private var isAdd = true
+    private var duration = 0
 
     constructor(context: Context) : this(context, null, 0)
 
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
 
+    init {
+        eventX = 0f - flagHeight
+        translationX = 0f - flagHeight
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         this.canvas = canvas
-        drawFlag()
+        if (isAdd) drawAddFlag() else drawTextFlag()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -55,7 +64,7 @@ class RecorderIndex(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         }
     }
 
-    private fun drawFlag() {
+    private fun drawTextFlag() {
         val x = flagHeight
         flagWidth = text.length * 10 + 30f
         val flagPath = Path()
@@ -72,6 +81,22 @@ class RecorderIndex(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         canvas.drawCircle(x, height - flagHeight, flagHeight / 2, textPaint)
     }
 
+    private fun drawAddFlag() {
+        val x = flagHeight
+        val flagPath = Path()
+        flagPath.moveTo(x, 0f)
+        flagPath.lineTo(x + flagBackWidth, 0f)
+        flagPath.lineTo(x + flagBackWidth, flagHeight)
+        flagPath.lineTo(x, flagHeight)
+        flagPath.close()
+        canvas.drawPath(flagPath, flagPaint)
+        canvas.drawLine(x, 0f, x, height - flagHeight * 2, flagPaint)
+        val baseLineY = WaveUtil.getBaseLineY(addPaint, flagHeight / 2)
+        canvas.drawText("+", x + (flagBackWidth / 2), baseLineY, addPaint)
+        canvas.drawCircle(x, height - flagHeight, flagHeight, flagPaint)
+        canvas.drawCircle(x, height - flagHeight, flagHeight / 2, textPaint)
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
@@ -80,8 +105,11 @@ class RecorderIndex(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
                 clickPoint.set(event.x, event.y)
             }
             MotionEvent.ACTION_MOVE -> {
+                isAdd = false
                 eventX = calX(x + (event.x - moveX))
                 translationX = eventX
+                durationToText()
+                invalidate()
             }
             MotionEvent.ACTION_UP -> {
                 val pointF = PointF(event.x, event.y)
@@ -89,8 +117,11 @@ class RecorderIndex(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
                 val b = abs(clickPoint.y - pointF.y) < 10f
                 val c = clickPoint.y < 54f
                 if (a && b && c && clickListener != null) {
-                    clickListener!!(clickPoint)
+                    val percent = (eventX + flagHeight) / rootView.width
+                    clickListener!!(percent)
                 }
+                isAdd = true
+                invalidate()
             }
         }
         return true
@@ -101,17 +132,27 @@ class RecorderIndex(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         return if (x > min) x else min
     }
 
+    private fun durationToText() {
+        val x = eventX + flagHeight
+        val p = x / rootView.width * duration
+        text = p.toInt().toString()
+    }
+
     fun setRecorderX(recorderX: Float) {
         eventX = calX(recorderX - flagHeight - flagBackWidth / 2)
         translationX = eventX
     }
 
-    fun setClickListener(clickListener: ((PointF) -> Unit)) {
+    fun setProgress(process: Int) {
+        val x = process * rootView.width / duration.toFloat()
+        setRecorderX(x)
+    }
+
+    fun setClickListener(clickListener: ((Float) -> Unit)) {
         this.clickListener = clickListener
     }
 
-    fun initView() {
-        eventX = 0f - flagHeight
-        translationX = 0f - flagHeight
+    fun setDuration(duration: Int) {
+        this.duration = duration
     }
 }
