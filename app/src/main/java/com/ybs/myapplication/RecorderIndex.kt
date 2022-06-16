@@ -149,8 +149,14 @@ class RecorderIndex(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
     }
 
     fun setProgress(process: Int) {
+        if (process - this.process < 0) {
+            this.process = process
+            val x = process * rootView.width / duration.toFloat()
+            setRecorderX(x)
+            return
+        }
         Handler(Looper.myLooper() ?: Looper.getMainLooper()).post {
-            val p = abs(process - this.process).toLong()
+            val p = process - this.process.toLong()
             val anim = ValueAnimator.ofInt(this.process, process)
             this.process = process
             anim.repeatCount = 0
