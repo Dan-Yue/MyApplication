@@ -43,36 +43,23 @@ class RecordedWave(
     private var canvas = Canvas()
 
     //绘制音波图的画笔
-    private val paint by lazy {
-        Paint().also {
-            it.strokeWidth = 3f
-            it.color = Color.parseColor("#FFB8B8")
-        }
-    }
+    private val paint by lazy { WaveUtil.getWavePaint() }
 
     //绘制旗子的画笔
-    private val flagPaint by lazy {
-        Paint().also {
-            it.strokeWidth = 3f
-            it.color = Color.parseColor("#8EB7FF")
-        }
-    }
+    private val flagPaint by lazy { WaveUtil.getFlagPaint() }
 
     //绘制旗子上数字的画笔
-    private val textPaint by lazy {
-        Paint(Paint.ANTI_ALIAS_FLAG).also {
-            it.textAlign = Paint.Align.CENTER
-            it.color = Color.WHITE
-            it.textSize = 24f
-            it.isFakeBoldText = true
-        }
-    }
+    private val textPaint by lazy { WaveUtil.getTextPaint() }
 
     //旗子坐标列表
     private val flagPointList = mutableListOf<Pair<PointF, Int>>()
 
     //旗子点击监听，参数（被点击旗子的中心点，被点击旗子的数字）
     private var listener: ((PointF, Int) -> Unit)? = null
+
+    private var isCross = false
+
+    private var crossClick: ((PointF, Int) -> Unit)? = null
 
     init {
         val a: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.RecorderWave)
@@ -112,11 +99,12 @@ class RecordedWave(
             val flagY = flagHeight / 2
             val pointF = PointF(flagX, flagY)
             flagPointList.add(Pair(pointF, it.second + 1))
-            drawFlag(it.first, it.second + 1, h)
+            drawFlag(it.first, it.second + 1)
+            if (isCross) drawCross(it.first)
         }
     }
 
-    private fun drawFlag(x: Float, i: Int, h: Float) {
+    private fun drawFlag(x: Float, i: Int) {
         val flagPath = Path()
         flagPath.moveTo(x, 0f)
         flagPath.lineTo(x + flagWidth, 0f)
@@ -124,9 +112,16 @@ class RecordedWave(
         flagPath.lineTo(x, flagHeight)
         flagPath.close()
         canvas.drawPath(flagPath, flagPaint)
-        canvas.drawLine(x, 0f, x, h * 2 - flagHeight * 2, flagPaint)
+        canvas.drawLine(x, 0f, x, height - flagHeight * 2, flagPaint)
         val baseLineY = WaveUtil.getBaseLineY(textPaint, flagHeight / 2)
         canvas.drawText(i.toString(), x + (flagWidth / 2), baseLineY, textPaint)
+    }
+
+    private fun drawCross(x: Float) {
+        val h = flagHeight.toInt()
+        var bp = BitmapFactory.decodeResource(resources, R.mipmap.flag_cross)
+        bp = Bitmap.createScaledBitmap(bp, h * 2, h * 2, true)
+        canvas.drawBitmap(bp, x - h, height - flagHeight * 5, flagPaint)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -144,11 +139,19 @@ class RecordedWave(
         if (abs(move) < 10f) {
             val i = WaveUtil.isPointFlag(startPoint, flagPointList, flagWidth, flagHeight)
             if (listener != null && i.first >= 0) listener!!(i.second, i.first + 1)
+            val flagSize = flagHeight * 2f
+            val crossY = height - flagHeight * 5
+            val k = WaveUtil.isPointCross(startPoint, flagPointList, flagSize, crossY)
+            if (crossClick != null && k.first >= 0) crossClick!!(k.second, k.first + 1)
         }
     }
 
     fun setFlagClickListener(flagListener: (PointF, Int) -> Unit) {
         this.listener = flagListener
+    }
+
+    fun setCrossClickListener(crossListener: (PointF, Int) -> Unit) {
+        this.crossClick = crossListener
     }
 
     fun initData() {
@@ -163,6 +166,16 @@ class RecordedWave(
 
     fun setData() {
         flag.add(75)
+        postInvalidate()
+    }
+
+    fun delData(index: Int) {
+        flag.removeAt(index - 1)
+        postInvalidate()
+    }
+
+    fun setCross(show: Boolean) {
+        isCross = show
         postInvalidate()
     }
 }

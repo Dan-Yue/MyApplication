@@ -2,7 +2,6 @@ package com.ybs.myapplication
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.util.AttributeSet
@@ -47,30 +46,13 @@ class RecordingWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
     private val minTimeInterval = 1000L
 
     //绘制音波图的画笔
-    private val paint by lazy {
-        Paint().also {
-            it.strokeWidth = 3f
-            it.color = Color.parseColor("#FFB8B8")
-        }
-    }
+    private val paint by lazy { WaveUtil.getWavePaint() }
 
     //绘制旗子的画笔
-    private val flagPaint by lazy {
-        Paint().also {
-            it.strokeWidth = 3f
-            it.color = Color.parseColor("#8EB7FF")
-        }
-    }
+    private val flagPaint by lazy { WaveUtil.getFlagPaint() }
 
     //绘制旗子上数字的画笔
-    private val textPaint by lazy {
-        Paint(Paint.ANTI_ALIAS_FLAG).also {
-            it.textAlign = Paint.Align.CENTER
-            it.color = Color.WHITE
-            it.textSize = 24f
-            it.isFakeBoldText = true
-        }
-    }
+    private val textPaint by lazy { WaveUtil.getTextPaint() }
 
     constructor(context: Context) : this(context, null, 0)
 

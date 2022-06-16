@@ -36,8 +36,13 @@ class RecorderWave(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         flag = findViewById(R.id.flag)
         recorded?.initData()
         recorded?.setFlagClickListener { point, _ ->
+            Log.d("recordedClick", "$point")
             flag?.setRecorderX(point.x)
         }
+        recorded?.setCrossClickListener { _, i ->
+            recorded?.delData(i)
+        }
+        flag?.initView()
         flag?.setClickListener {
             Log.d("flagClick", "point")
             recorded?.setData()

@@ -14,9 +14,7 @@
 
     <com.ybs.myapplication.RecorderIndex
         android:id="@+id/flag"
-        android:layout_width="18dp"
-        android:layout_height="335dp"
-        android:scaleType="fitXY"
-        android:src="@mipmap/crop_start" />
+        android:layout_width="wrap_content"
+        android:layout_height="335dp"/>
 
 </FrameLayout>
