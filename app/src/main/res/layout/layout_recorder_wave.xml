@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:hc="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="@dimen/wave_height"
     android:id="@+id/frame">
 
     <com.ybs.myapplication.RecordedBackground
         android:id="@+id/recorded"
         android:layout_width="match_parent"
-        android:layout_height="335dp"
-        android:background="@color/hui"
-        hc:default_size="335dp" />
+        android:layout_height="match_parent"/>
 
     <com.ybs.myapplication.RecorderIndex
         android:id="@+id/flag"
         android:layout_width="wrap_content"
-        android:layout_height="335dp"/>
+        android:layout_height="match_parent"/>
 
 </FrameLayout>

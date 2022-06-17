@@ -8,14 +8,40 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="250dp"
+        android:layout_height="@dimen/wave_height"
         android:background="#00000000">
+
+        <TextView
+            android:visibility="invisible"
+            android:id="@+id/start_progress"
+            android:layout_marginStart="57.5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="3dp"
+            android:paddingEnd="3dp"
+            android:gravity="center"
+            android:textSize="10sp"
+            android:textColor="@color/white"
+            android:background="@color/recorder_red"/>
+
+        <TextView
+            android:visibility="invisible"
+            android:id="@+id/end_progress"
+            android:layout_marginStart="157.5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="3dp"
+            android:paddingEnd="3dp"
+            android:gravity="center"
+            android:textSize="10sp"
+            android:textColor="@color/white"
+            android:background="@color/recorder_red"/>
 
         <View
             android:id="@+id/view"
             android:layout_width="100dp"
             android:layout_height="match_parent"
-            android:background="#AAFFEEEE"
+            android:background="#99FFCCCC"
             android:layout_marginStart="57.5dp"/>
 
         <RelativeLayout
@@ -27,21 +53,20 @@
                 android:layout_width="15dp"
                 android:layout_height="match_parent"
                 android:layout_marginStart="50dp"
-                android:scaleType="fitXY"
-                android:src="@mipmap/crop_start" />
+                android:src="@mipmap/crop_index" />
 
             <ImageView
                 android:id="@+id/right"
                 android:layout_width="15dp"
                 android:layout_height="match_parent"
                 android:layout_marginStart="150dp"
-                android:src="@mipmap/crop_end"/>
+                android:src="@mipmap/crop_index"/>
         </RelativeLayout>
     </FrameLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="@dimen/crop_height"
         android:gravity="center_vertical"
         android:background="@color/white">
 
@@ -57,7 +82,7 @@
             android:gravity="center"
             android:paddingBottom="5dp"
             android:layout_marginStart="24dp"
-            android:textColor="#FF5B5B"
+            android:textColor="@color/recorder_red"
             android:textSize="12sp" />
 
 
@@ -74,7 +99,7 @@
             android:paddingBottom="5dp"
             android:layout_marginEnd="24dp"
             android:layout_alignParentEnd="true"
-            android:textColor="#FF5B5B"
+            android:textColor="@color/recorder_red"
             android:textSize="12sp" />
 
     </RelativeLayout>

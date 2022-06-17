@@ -61,12 +61,6 @@ class RecordedBackground(
 
     private var crossClick: ((PointF, Int) -> Unit)? = null
 
-    init {
-        val a: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.RecorderWave)
-        defaultSize = a.getDimensionPixelSize(R.styleable.RecorderWave_default_size, 100)
-        a.recycle()
-    }
-
     constructor(context: Context) : this(context, null, 0)
 
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)

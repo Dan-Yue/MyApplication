@@ -4,11 +4,20 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.ybs.myapplication.RecorderWave
-        android:id="@+id/RecorderWave"
-        android:layout_width="match_parent"
-        android:layout_height="335dp"
-        android:background="@color/hui" />
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <com.ybs.myapplication.RecorderWave
+            android:id="@+id/RecorderWave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <com.ybs.myapplication.RecorderCrop
+            android:id="@+id/crop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </FrameLayout>
 
     <Button
         android:id="@+id/start"

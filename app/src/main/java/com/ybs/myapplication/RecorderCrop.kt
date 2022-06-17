@@ -3,6 +3,7 @@ package com.ybs.myapplication
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -41,6 +42,9 @@ class RecorderCrop(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
     private var startImage: ImageView? = null
     private val px = (7.5f * context.resources.displayMetrics.density + 0.5f).toInt()
     private var click: ((Boolean, Double, Double) -> Unit)? = null
+    private var startProgress: TextView? = null
+    private var endProgress: TextView? = null
+    private var duration = 1000L
 
     constructor(context: Context) : this(context, null, 0)
 
@@ -57,9 +61,12 @@ class RecorderCrop(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         view = findViewById(R.id.view)
         startImage = findViewById(R.id.left)
         endImage = findViewById(R.id.right)
+        startProgress = findViewById(R.id.start_progress)
+        endProgress = findViewById(R.id.end_progress)
         startImage!!.setOnTouchListener { v, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
+                    startProgress!!.visibility = View.VISIBLE
                     endLastX = endImage!!.left
                     startX = event.rawX
                 }
@@ -69,9 +76,11 @@ class RecorderCrop(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
                         v.layout((v.left + dx).toInt(), v.top, (v.right + dx).toInt(), v.bottom)
                         view!!.layout((v.right + dx - px).toInt(), v.top, endLastX + px, v.bottom)
                         startX = event.rawX
+                        startProgress!!.x = view!!.x
                     }
                 }
                 MotionEvent.ACTION_UP -> {
+                    startProgress!!.visibility = View.INVISIBLE
                     startLastX = v.right
                 }
             }
@@ -80,6 +89,7 @@ class RecorderCrop(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         endImage!!.setOnTouchListener { v, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
+                    endProgress!!.visibility = View.VISIBLE
                     startLastX = startImage!!.right
                     endX = event.rawX
                 }
@@ -88,10 +98,12 @@ class RecorderCrop(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
                     if (v.left + dx > startLastX && v.right + dx <= layout!!.right) {
                         v.layout((v.left + dx).toInt(), v.top, (v.right + dx).toInt(), v.bottom)
                         view!!.layout(startLastX - px, v.top, (v.left + dx + px).toInt(), v.bottom)
+                        endProgress!!.x = view!!.x + view!!.width
                         endX = event.rawX
                     }
                 }
                 MotionEvent.ACTION_UP -> {
+                    endProgress!!.visibility = View.INVISIBLE
                     endLastX = v.left
                 }
             }
@@ -107,6 +119,10 @@ class RecorderCrop(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
 
     fun setClick(block: (Boolean, Double, Double) -> Unit) {
         click = block
+    }
+
+    fun setDuration(duration: Long) {
+        this.duration = duration
     }
 
     private fun handling(type: Boolean) {
