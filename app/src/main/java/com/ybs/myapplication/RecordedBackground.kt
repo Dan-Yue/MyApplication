@@ -19,8 +19,6 @@ class RecordedBackground(
     defStyleAttr: Int
 ) : View(context, attrs, defStyleAttr) {
 
-    private var defaultSize = 0
-
     //最开始手指的坐标
     private var startPoint = PointF(0f, 0f)
 

@@ -32,19 +32,47 @@ import android.widget.TextView
  */
 class RecorderCrop(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
     LinearLayout(context, attrs, defStyleAttr) {
+
+    //根View
     private var layout: View? = null
+
+    //范围View
     private var view: View? = null
+
+    //裁剪开始图片按钮
     private var lImg: ImageView? = null
+
+    //裁剪结束图片按钮
     private var rImg: ImageView? = null
+
+    //取消和保存裁剪操作结果
     private var click: ((Boolean, Double, Double) -> Unit)? = null
+
+    //裁剪开始时间显示
     private var lText: TextView? = null
+
+    //裁剪结束时间显示
     private var rText: TextView? = null
+
+    //录音总时长
     private var duration = 1000L
+
+    //手指的绝对X坐标
     private var ex = 0f
+
+    //裁剪开始图片的X坐标
     private var lx = 0f
+
+    //裁剪开始图片的宽度
     private var lw = 0
+
+    //裁剪结束时间的X坐标
     private var rx = 0f
+
+    //裁剪结束时间图片的宽度
     private var rw = 0
+
+    //裁剪范围控件的X坐标
     private var vx = 0f
 
     constructor(context: Context) : this(context, null, 0)
@@ -106,14 +134,29 @@ class RecorderCrop(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         }
     }
 
+    /**
+     * 设置取消和裁剪事件监听
+     *
+     * @param block 取消和裁剪监听器
+     */
     fun setClick(block: (Boolean, Double, Double) -> Unit) {
         click = block
     }
 
+    /**
+     * 设置录音总时长
+     *
+     * @param duration 录音总时长，毫秒值
+     */
     fun setDuration(duration: Long) {
         this.duration = duration
     }
 
+    /**
+     * 取消和裁剪处理方法
+     *
+     * @param type 是否是取消
+     */
     private fun handling(type: Boolean) {
         val start = rImg!!.left
         val end = lImg!!.right
@@ -125,6 +168,11 @@ class RecorderCrop(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         }
     }
 
+    /**
+     * 处理触摸时间前变量赋值
+     *
+     * @param event 触摸的MotionEvent对象
+     */
     private fun initEvent(event: MotionEvent): Int {
         ex = event.rawX
         lx = lImg!!.x
@@ -135,7 +183,14 @@ class RecorderCrop(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         return event.action
     }
 
-    //动态设置view的宽高
+    /**
+     * 动态设置view的宽高和x坐标
+     *
+     * @param view 视图
+     * @param x x坐标值
+     * @param width 视图宽度
+     * @param height 视图高度
+     */
     private fun setWHX(view: View?, x: Float, width: Int, height: Int) {
         if (view != null) {
             val layoutParams = view.layoutParams
