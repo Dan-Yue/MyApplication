@@ -65,17 +65,12 @@ class RecorderCrop(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         lText = findViewById(R.id.start_progress)
         rText = findViewById(R.id.end_progress)
         rImg!!.setOnTouchListener { v, event ->
-            ex = event.rawX
-            lx = lImg!!.x
-            lw = lImg!!.width
-            vx = view!!.x
-            when (event.action) {
+            when (initEvent(event)) {
                 MotionEvent.ACTION_DOWN -> lText!!.visibility = View.VISIBLE
                 MotionEvent.ACTION_MOVE -> {
-                    val endX = lx - lw
-                    val viewWidth = (endX - ex + lw).toInt()
+                    val viewWidth = (lx - ex).toInt()
                     val time = (ex * duration / rootView.width).toLong()
-                    if (ex < endX && ex > 0) {
+                    if (ex < (lx - lw) && ex > 0) {
                         setWHX(v, ex, v.width, v.height)
                         setWHX(view, ex + lw / 2, viewWidth, v.height)
                         lText!!.x = vx
@@ -87,17 +82,12 @@ class RecorderCrop(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
             true
         }
         lImg!!.setOnTouchListener { v, event ->
-            ex = event.rawX
-            rx = rImg!!.x
-            rw = rImg!!.width
-            vx = view!!.x
-            when (event.action) {
+            when (initEvent(event)) {
                 MotionEvent.ACTION_DOWN -> rText!!.visibility = View.VISIBLE
                 MotionEvent.ACTION_MOVE -> {
-                    val startX = rx + rw
                     val viewWidth = (ex - vx + rw / 2).toInt()
                     val time = ((ex + rw) * duration / rootView.width).toLong()
-                    if (ex > startX && ex < (rootView.width - rw)) {
+                    if (ex > (rx + rw) && ex < (rootView.width - rw)) {
                         setWHX(v, ex, v.width, v.height)
                         setWHX(view, vx, viewWidth, v.height)
                         rText!!.x = vx + view!!.width - rText!!.width
@@ -133,6 +123,16 @@ class RecorderCrop(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         if (click != null) {
             click!!(type, if (s > 100) 100.0 else s, if (e > 100) 100.0 else e)
         }
+    }
+
+    private fun initEvent(event: MotionEvent): Int {
+        ex = event.rawX
+        lx = lImg!!.x
+        lw = lImg!!.width
+        rx = rImg!!.x
+        rw = rImg!!.width
+        vx = view!!.x
+        return event.action
     }
 
     //动态设置view的宽高
