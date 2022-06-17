@@ -3,13 +3,13 @@ package com.ybs.myapplication
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+
 
 /** java **/
 //      findViewById<RecorderCrop>(R.id.crop).setClick { b, s, e ->
@@ -34,17 +34,18 @@ class RecorderCrop(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
     LinearLayout(context, attrs, defStyleAttr) {
     private var layout: View? = null
     private var view: View? = null
-    private var endX: Float = 0f
-    private var endLastX = 0
-    private var endImage: ImageView? = null
-    private var startX: Float = 0f
-    private var startLastX = 0
-    private var startImage: ImageView? = null
-    private val px = (7.5f * context.resources.displayMetrics.density + 0.5f).toInt()
+    private var lImg: ImageView? = null
+    private var rImg: ImageView? = null
     private var click: ((Boolean, Double, Double) -> Unit)? = null
-    private var startProgress: TextView? = null
-    private var endProgress: TextView? = null
+    private var lText: TextView? = null
+    private var rText: TextView? = null
     private var duration = 1000L
+    private var ex = 0f
+    private var lx = 0f
+    private var lw = 0
+    private var rx = 0f
+    private var rw = 0
+    private var vx = 0f
 
     constructor(context: Context) : this(context, null, 0)
 
@@ -59,53 +60,51 @@ class RecorderCrop(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
         LayoutInflater.from(context).inflate(R.layout.layout_recorder_crop, this, true)
         layout = findViewById(R.id.layout)
         view = findViewById(R.id.view)
-        startImage = findViewById(R.id.left)
-        endImage = findViewById(R.id.right)
-        startProgress = findViewById(R.id.start_progress)
-        endProgress = findViewById(R.id.end_progress)
-        startImage!!.setOnTouchListener { v, event ->
+        rImg = findViewById(R.id.left)
+        lImg = findViewById(R.id.right)
+        lText = findViewById(R.id.start_progress)
+        rText = findViewById(R.id.end_progress)
+        rImg!!.setOnTouchListener { v, event ->
+            ex = event.rawX
+            lx = lImg!!.x
+            lw = lImg!!.width
+            vx = view!!.x
             when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    startProgress!!.visibility = View.VISIBLE
-                    endLastX = endImage!!.left
-                    startX = event.rawX
-                }
+                MotionEvent.ACTION_DOWN -> lText!!.visibility = View.VISIBLE
                 MotionEvent.ACTION_MOVE -> {
-                    val dx = event.rawX - startX
-                    if (v.right + dx <= endLastX && v.left + dx > 0) {
-                        v.layout((v.left + dx).toInt(), v.top, (v.right + dx).toInt(), v.bottom)
-                        view!!.layout((v.right + dx - px).toInt(), v.top, endLastX + px, v.bottom)
-                        startX = event.rawX
-                        startProgress!!.x = view!!.x
+                    val endX = lx - lw
+                    val viewWidth = (endX - ex + lw).toInt()
+                    val time = (ex * duration / rootView.width).toLong()
+                    if (ex < endX && ex > 0) {
+                        setWHX(v, ex, v.width, v.height)
+                        setWHX(view, ex + lw / 2, viewWidth, v.height)
+                        lText!!.x = vx
+                        lText!!.text = time.toString()
                     }
                 }
-                MotionEvent.ACTION_UP -> {
-                    startProgress!!.visibility = View.INVISIBLE
-                    startLastX = v.right
-                }
+                MotionEvent.ACTION_UP -> lText!!.visibility = View.INVISIBLE
             }
             true
         }
-        endImage!!.setOnTouchListener { v, event ->
+        lImg!!.setOnTouchListener { v, event ->
+            ex = event.rawX
+            rx = rImg!!.x
+            rw = rImg!!.width
+            vx = view!!.x
             when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    endProgress!!.visibility = View.VISIBLE
-                    startLastX = startImage!!.right
-                    endX = event.rawX
-                }
+                MotionEvent.ACTION_DOWN -> rText!!.visibility = View.VISIBLE
                 MotionEvent.ACTION_MOVE -> {
-                    val dx = event.rawX - endX
-                    if (v.left + dx > startLastX && v.right + dx <= layout!!.right) {
-                        v.layout((v.left + dx).toInt(), v.top, (v.right + dx).toInt(), v.bottom)
-                        view!!.layout(startLastX - px, v.top, (v.left + dx + px).toInt(), v.bottom)
-                        endProgress!!.x = view!!.x + view!!.width
-                        endX = event.rawX
+                    val startX = rx + rw
+                    val viewWidth = (ex - vx + rw / 2).toInt()
+                    val time = ((ex + rw) * duration / rootView.width).toLong()
+                    if (ex > startX && ex < (rootView.width - rw)) {
+                        setWHX(v, ex, v.width, v.height)
+                        setWHX(view, vx, viewWidth, v.height)
+                        rText!!.x = vx + view!!.width - rText!!.width
+                        rText!!.text = time.toString()
                     }
                 }
-                MotionEvent.ACTION_UP -> {
-                    endProgress!!.visibility = View.INVISIBLE
-                    endLastX = v.left
-                }
+                MotionEvent.ACTION_UP -> rText!!.visibility = View.INVISIBLE
             }
             true
         }
@@ -126,13 +125,24 @@ class RecorderCrop(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
     }
 
     private fun handling(type: Boolean) {
-        val start = startImage!!.left
-        val end = endImage!!.right
+        val start = rImg!!.left
+        val end = lImg!!.right
         val all = layout!!.width
         val s = start.toDouble() / all
         val e = end.toDouble() / all
         if (click != null) {
             click!!(type, if (s > 100) 100.0 else s, if (e > 100) 100.0 else e)
+        }
+    }
+
+    //动态设置view的宽高
+    private fun setWHX(view: View?, x: Float, width: Int, height: Int) {
+        if (view != null) {
+            val layoutParams = view.layoutParams
+            layoutParams.width = width
+            layoutParams.height = height
+            view.x = x
+            view.layoutParams = layoutParams
         }
     }
 }
