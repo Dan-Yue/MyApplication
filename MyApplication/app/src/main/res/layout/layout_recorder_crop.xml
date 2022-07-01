@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#00000000"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:background="#00000000">
+
+        <View
+            android:id="@+id/view"
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="#AAFFEEEE"
+            android:layout_marginStart="57.5dp"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/left"
+                android:layout_width="15dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="50dp"
+                android:scaleType="fitXY"
+                android:src="@mipmap/crop_start"/>
+
+            <ImageView
+                android:id="@+id/right"
+                android:layout_width="15dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="150dp"
+                android:src="@mipmap/crop_end"/>
+        </RelativeLayout>
+    </FrameLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:background="@color/white">
+
+        <TextView
+            android:background="@drawable/bg_text_shape_yuan_fcefef"
+            android:id="@+id/reserved"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="保留"
+            android:paddingStart="10dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="10dp"
+            android:gravity="center"
+            android:paddingBottom="5dp"
+            android:layout_marginStart="24dp"
+            android:textColor="#FF5B5B"
+            android:textSize="12sp" />
+
+
+        <TextView
+            android:background="@drawable/bg_text_shape_yuan_fcefef"
+            android:id="@+id/del"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="删除"
+            android:paddingStart="10dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="10dp"
+            android:gravity="center"
+            android:paddingBottom="5dp"
+            android:layout_marginEnd="24dp"
+            android:layout_alignParentEnd="true"
+            android:textColor="#FF5B5B"
+            android:textSize="12sp" />
+
+    </RelativeLayout>
+</LinearLayout>
